@@ -100,7 +100,7 @@ export default function Footer(props: FooterProps) {
           <IconInstagram class="h-6 w-6" />
         </a>
         <a
-          href="https://tiktok.com/@a.realestate"
+          href="https://tiktok.com/@ad.realestate"
           target="_blank"
           aria-label="Arvrtise Real Estate on TikTok"
           class={LINK_STYLES}
