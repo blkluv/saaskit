@@ -22,7 +22,7 @@ function FreePlanCard() {
             Free
           </h2>
           <p class="text-gray-500">
-            Discover and share your favorite Deno projects.
+            Discover and Arvrtise real estate.
           </p>
         </div>
         <p>
@@ -75,7 +75,7 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         <p>
           <span class="text-4xl font-bold">
             {formatCurrency(
-              props.product.default_price.unit_amount! / 100,
+              props.product.default_price.unit_amount! / 1000,
               props.product.default_price?.currency,
             )}
           </span>
@@ -91,7 +91,7 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          Official pro user badge <PremiumBadge class="w-5 h-5 inline" />
+          @A.realestate TikTok post
         </p>
       </div>
 
@@ -127,7 +127,7 @@ function EnterprisePricingCard() {
             Enterprise
           </h2>
           <p class="text-gray-500">
-            Make the Deno Hunt experience yours.
+            Customize your Real Estate Arvrtising campaign .
           </p>
         </div>
         <p>
@@ -140,18 +140,17 @@ function EnterprisePricingCard() {
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
           Direct line to{" "}
-          <a href="/users/lambtron" class="text-secondary">Andy</a> and{" "}
-          <a href="/users/iuioiua" class="text-secondary">Asher</a>
+          <a href="/users/hahz" class="text-secondary">The Wizard of Hahz</a> 
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          Complimentary Deno merch
+          Paid ad campaign
         </p>
       </div>
 
       <div class="text-center">
         <a
-          href="mailto:andy@deno.com"
+          href="mailto:info@arvrtise.com"
           class={`${BUTTON_STYLES} w-full rounded-md block`}
         >
           Contact us

@@ -50,11 +50,10 @@ export default defineRoute<State>((_req, ctx) => {
       <main class="flex-1 flex flex-col justify-center mx-auto w-full space-y-16 p-4 max-w-6xl">
         <div class="text-center">
           <h1 class={HEADING_STYLES}>
-            Share your project
+            DIY Real Estate Arvrting
           </h1>
           <p class="text-gray-500">
-            Let the community know about your Deno-related blog post, video or
-            module!
+            Let the community know about your real estate project.
           </p>
         </div>
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 md:items-center">
@@ -72,7 +71,7 @@ export default defineRoute<State>((_req, ctx) => {
               <strong>Do</strong> include a description with your title.
 
               <div class="text-sm text-gray-500">
-                E.g. “Deno Hunt: the best place to share your Deno project”
+                E.g. “Arvrtise real estate: with your What3Words property address keep.it.simple”
               </div>
             </div>
             <p>
@@ -95,7 +94,7 @@ export default defineRoute<State>((_req, ctx) => {
                 type="text"
                 name="title"
                 required
-                placeholder="Deno Hunt: the best place to share your Deno project"
+                placeholder="Arvrtise Real Estate: the best place to share your real estate project"
                 disabled={!ctx.state.sessionUser}
               />
             </div>
@@ -112,7 +111,7 @@ export default defineRoute<State>((_req, ctx) => {
                 type="url"
                 name="url"
                 required
-                placeholder="https://my-awesome-project.com"
+                placeholder="https://realestate.arvrtise.com"
                 disabled={!ctx.state.sessionUser}
               />
             </div>

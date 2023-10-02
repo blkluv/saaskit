@@ -63,7 +63,7 @@ export function timeAgo(date: Date) {
  * ```ts
  * import { formatCurrency } from "@/utils/display.ts";
  *
- * formatCurrency(5, "USD"); // Returns "$5"
+ * formatCurrency(999, "USD"); // Returns "$999"
  * ```
  */
 export function formatCurrency(

@@ -6,8 +6,10 @@ import {
   SITE_BAR_STYLES,
   SITE_NAME,
 } from "@/utils/constants.ts";
+// Import the TikTok and Instagram icons as React components
 import IconBrandDiscord from "tabler_icons_tsx/brand-discord.tsx";
-import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
+import IconBrandInstagram from "tabler_icons_tsx/brand-instagram.tsx";
+import IconBrandTikTok from "tabler_icons_tsx/brand-tiktok.tsx";
 import IconRss from "tabler_icons_tsx/rss.tsx";
 
 function MadeWithFreshBadge() {
@@ -78,27 +80,32 @@ export default function Footer(props: FooterProps) {
         >
           Blog
         </a>
-        <a href="/feed" aria-label="Deno Hunt RSS Feed" class={LINK_STYLES}>
+        <a href="/feed" aria-label="Arvrtise Real Estate RSS Feed" class={LINK_STYLES}>
           <IconRss class="h-6 w-6" />
         </a>
         <a
-          href="https://discord.gg/deno"
+          href="https://discord.gg/gvmgQsGQUk"
           target="_blank"
-          aria-label="Deno SaaSKit on Discord"
+          aria-label="Arvrtise Real Estate on Discord"
           class={LINK_STYLES}
         >
           <IconBrandDiscord class="h-6 w-6" />
         </a>
         <a
-          href="https://github.com/denoland/saaskit"
+          href="https://instagram.com/arvrtise"
           target="_blank"
-          aria-label="Deno SaaSKit repo on GitHub"
+          aria-label="Arvrtise Real Estate on Instagram"
           class={LINK_STYLES}
         >
-          <IconBrandGithub class="h-6 w-6" />
+          <IconInstagram class="h-6 w-6" />
         </a>
-        <a href="https://fresh.deno.dev">
-          <MadeWithFreshBadge />
+        <a
+          href="https://tiktok.com/@a.realestate"
+          target="_blank"
+          aria-label="Arvrtise Real Estate on TikTok"
+          class={LINK_STYLES}
+        >
+          <IconBrandTikTok class="h-6 w-6" />
         </a>
       </nav>
     </footer>

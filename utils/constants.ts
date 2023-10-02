@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-export const SITE_NAME = "Deno Hunt (Beta)";
-export const SITE_DESCRIPTION = "Discover new Deno projects. Share your own.";
+export const SITE_NAME = "Arvrtise Real Estate";
+export const SITE_DESCRIPTION = "DIY real estate Arvrtising.";
 
 /**
  * These are base styles for some elements. This approach is chosen as it avoids more complex alternatives:
