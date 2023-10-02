@@ -11,9 +11,9 @@ async function createPremiumTierProduct(stripe: Stripe) {
    */
   return await stripe.products.create({
     name: "Premium",
-    description: "Unlock premium features like a TikTok post and more.",
+    description: "Unlock premium features like a pro badge and more.",
     default_price_data: {
-      unit_amount: 1000,
+      unit_amount: 99,
       currency: "usd",
       recurring: {
         interval: "month",

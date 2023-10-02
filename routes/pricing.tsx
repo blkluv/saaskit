@@ -91,7 +91,7 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          @Ad.realestate TikTok post
+          Official pro user badge
         </p>
       </div>
 

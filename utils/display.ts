@@ -63,7 +63,7 @@ export function timeAgo(date: Date) {
  * ```ts
  * import { formatCurrency } from "@/utils/display.ts";
  *
- * formatCurrency(999, "USD"); // Returns "$999"
+ * formatCurrency(99, "USD"); // Returns "$99"
  * ```
  */
 export function formatCurrency(
@@ -80,6 +80,6 @@ export function formatCurrency(
     },
   ).format(amount)
     // Issue: https://stackoverflow.com/questions/44533919/space-after-symbol-with-js-intl
-    .replace(/^(\D+)/, "$1")
+    .replace(/^(\D+)/, "$99")
     .replace(/\s+/, "");
 }

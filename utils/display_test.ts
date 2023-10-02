@@ -32,5 +32,5 @@ Deno.test("[display] timeAgo()", () => {
 });
 
 Deno.test("[display] formatCurrency()", () => {
-  assertEquals(formatCurrency(5, "USD"), "$5");
+  assertEquals(formatCurrency(9, "USD"), "$99");
 });
