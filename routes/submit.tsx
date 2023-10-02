@@ -50,7 +50,7 @@ export default defineRoute<State>((_req, ctx) => {
       <main class="flex-1 flex flex-col justify-center mx-auto w-full space-y-16 p-4 max-w-6xl">
         <div class="text-center">
           <h1 class={HEADING_STYLES}>
-            DIY Real Estate Arvrting
+            DIY Real Estate Arvrtising
           </h1>
           <p class="text-gray-500">
             Let the community know about your real estate project.
