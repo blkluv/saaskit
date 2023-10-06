@@ -6,22 +6,19 @@ import {
   createItem,
   createUser,
   createVote,
-  deleteItem,
-  deleteUserSession,
-  deleteVote,
   getAreVotedByUser,
   getItem,
   getUser,
   getUserBySession,
   getUserByStripeCustomer,
   type Item,
-  kv,
   listItems,
   listItemsByUser,
   listItemsVotedByUser,
   randomItem,
   randomUser,
   updateUser,
+  updateUserSession,
   type User,
 } from "./db.ts";
 
@@ -42,7 +39,6 @@ Deno.test("[db] items", async () => {
   assertEquals(await getItem(item2.id), null);
   assertEquals(await collectValues(listItems()), []);
   assertEquals(await collectValues(listItemsByUser(user.login)), []);
-  await assertRejects(async () => await deleteItem(item1), "Item not found");
 
   await createItem(item1);
   await createItem(item2);
@@ -55,14 +51,6 @@ Deno.test("[db] items", async () => {
     item1,
     item2,
   ]);
-
-  await deleteItem(item1);
-  await deleteItem(item2);
-
-  assertEquals(await getItem(item1.id), null);
-  assertEquals(await getItem(item1.id), null);
-  assertEquals(await collectValues(listItems()), []);
-  assertEquals(await collectValues(listItemsByUser(user.login)), []);
 });
 
 Deno.test("[db] user", async () => {
@@ -78,20 +66,25 @@ Deno.test("[db] user", async () => {
   assertEquals(await getUserBySession(user.sessionId), user);
   assertEquals(await getUserByStripeCustomer(user.stripeCustomerId!), user);
 
-  const user1 = randomUser();
-  await createUser(user1);
-
-  await deleteUserSession(user.sessionId);
-  assertEquals(await getUserBySession(user.sessionId), null);
-
-  const newUser: User = { ...user, sessionId: crypto.randomUUID() };
-  await updateUser(newUser);
-  assertEquals(await getUser(newUser.login), newUser);
-  assertEquals(await getUserBySession(newUser.sessionId), newUser);
+  const subscribedUser: User = { ...user, isSubscribed: true };
+  await updateUser(subscribedUser);
+  assertEquals(await getUser(subscribedUser.login), subscribedUser);
   assertEquals(
-    await getUserByStripeCustomer(newUser.stripeCustomerId!),
-    newUser,
+    await getUserBySession(subscribedUser.sessionId),
+    subscribedUser,
   );
+  assertEquals(
+    await getUserByStripeCustomer(subscribedUser.stripeCustomerId!),
+    subscribedUser,
+  );
+
+  const newSessionId = crypto.randomUUID();
+  await updateUserSession(user, newSessionId);
+  assertEquals(await getUserBySession(user.sessionId), null);
+  assertEquals(await getUserBySession(newSessionId), {
+    ...user,
+    sessionId: newSessionId,
+  });
 });
 
 Deno.test("[db] votes", async () => {
@@ -122,43 +115,6 @@ Deno.test("[db] votes", async () => {
 
   assertEquals(await collectValues(listItemsVotedByUser(user.login)), [item]);
   await assertRejects(async () => await createVote(vote));
-
-  await deleteItem(item);
-  await assertRejects(
-    async () => await deleteVote(vote),
-    Deno.errors.NotFound,
-    "Item not found",
-  );
-  await createItem(item);
-
-  /** @todo(iuioiua) Replace with `deleteUser()` once implemented */
-  await kv.delete(["users", user.login]);
-  await assertRejects(
-    async () => await deleteVote(vote),
-    Deno.errors.NotFound,
-    "User not found",
-  );
-  /** @todo(iuioiua) Replace with `createUser()` once `deleteUser()` is implemented */
-  await kv.set(["users", user.login], user);
-
-  await kv.delete(["items_voted_by_user", user.login, item.id]);
-  await assertRejects(
-    async () => await deleteVote(vote),
-    Deno.errors.NotFound,
-    "Item voted by user not found",
-  );
-  await kv.set(["items_voted_by_user", user.login, item.id], item);
-
-  await kv.delete(["users_voted_for_item", item.id, user.login]);
-  await assertRejects(
-    async () => await deleteVote(vote),
-    Deno.errors.NotFound,
-    "User voted for item not found",
-  );
-  await kv.set(["users_voted_for_item", item.id, user.login], user);
-
-  await deleteVote(vote);
-  assertEquals(await collectValues(listItemsVotedByUser(user.login)), []);
 });
 
 Deno.test("[db] getAreVotedByUser()", async () => {

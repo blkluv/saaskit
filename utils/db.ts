@@ -1,13 +1,13 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 import { ulid } from "std/ulid/mod.ts";
 
-const KV_PATH_KEY = "KV_PATH";
+const DENO_KV_PATH_KEY = "DENO_KV_PATH";
 let path = undefined;
 if (
-  (await Deno.permissions.query({ name: "env", variable: KV_PATH_KEY }))
+  (await Deno.permissions.query({ name: "env", variable: DENO_KV_PATH_KEY }))
     .state === "granted"
 ) {
-  path = Deno.env.get(KV_PATH_KEY);
+  path = Deno.env.get(DENO_KV_PATH_KEY);
 }
 export const kv = await Deno.openKv(path);
 
@@ -87,41 +87,6 @@ export async function createItem(item: Item) {
 }
 
 /**
- * Deletes the item from the database. Throws if the item doesn't exist.
- *
- * @example
- * ```ts
- * import { deleteItem } from "@/utils/db.ts";
- *
- * await deleteItem({
- *   id: "01H9YD2RVCYTBVJEYEJEV5D1S1",
- *   userLogin: "john_doe",
- * });
- * ```
- */
-export async function deleteItem(item: Pick<Item, "id" | "userLogin">) {
-  const itemsKey = ["items", item.id];
-  const itemsByUserKey = ["items_by_user", item.userLogin, item.id];
-  const [itemsRes, itemsByUserRes] = await kv.getMany<Item[]>([
-    itemsKey,
-    itemsByUserKey,
-  ]);
-  if (itemsRes.value === null) throw new Deno.errors.NotFound("Item not found");
-  if (itemsByUserRes.value === null) {
-    throw new Deno.errors.NotFound("Item by user not found");
-  }
-
-  const res = await kv.atomic()
-    .check(itemsRes)
-    .check(itemsByUserRes)
-    .delete(itemsKey)
-    .delete(itemsByUserKey)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to delete item");
-}
-
-/**
  * Gets the item with the given ID from the database.
  *
  * @example
@@ -146,11 +111,11 @@ export async function getItem(id: string) {
  * the items in the database, in chronological order.
  *
  * @example
- * ```
+ * ```ts
  * import { listItems } from "@/utils/db.ts";
  *
  * for await (const entry of listItems()) {
- *   entry.value.itemId; // Returns "01H9YD2RVCYTBVJEYEJEV5D1S1"
+ *   entry.value.id; // Returns "01H9YD2RVCYTBVJEYEJEV5D1S1"
  *   entry.value.userLogin; // Returns "pedro"
  *   entry.key; // Returns ["items_voted_by_user", "01H9YD2RVCYTBVJEYEJEV5D1S1", "pedro"]
  *   entry.versionstamp; // Returns "00000000000000010000"
@@ -166,11 +131,11 @@ export function listItems(options?: Deno.KvListOptions) {
  * the items by a given user in the database, in chronological order.
  *
  * @example
- * ```
+ * ```ts
  * import { listItemsByUser } from "@/utils/db.ts";
  *
  * for await (const entry of listItemsByUser("pedro")) {
- *   entry.value.itemId; // Returns "01H9YD2RVCYTBVJEYEJEV5D1S1"
+ *   entry.value.id; // Returns "01H9YD2RVCYTBVJEYEJEV5D1S1"
  *   entry.value.userLogin; // Returns "pedro"
  *   entry.key; // Returns ["items_voted_by_user", "01H9YD2RVCYTBVJEYEJEV5D1S1", "pedro"]
  *   entry.versionstamp; // Returns "00000000000000010000"
@@ -188,14 +153,6 @@ export function listItemsByUser(
 export interface Vote {
   itemId: string;
   userLogin: string;
-}
-
-/** For testing */
-export function randomVote(): Vote {
-  return {
-    itemId: crypto.randomUUID(),
-    userLogin: crypto.randomUUID(),
-  };
 }
 
 /**
@@ -250,75 +207,15 @@ export async function createVote(vote: Vote) {
 }
 
 /**
- * Deletes the vote from the database. Throws if the item, user or vote doesn't
- * exist. The item's score is decremented by 1.
- *
- * @example
- * ```ts
- * import { deleteVote } from "@/utils/db.ts";
- *
- * await deleteVote({
- *   itemId: "01H9YD2RVCYTBVJEYEJEV5D1S1",
- *   userLogin: "pedro"
- * });
- * ```
- */
-export async function deleteVote(vote: Omit<Vote, "createdAt">) {
-  const itemKey = ["items", vote.itemId];
-  const userKey = ["users", vote.userLogin];
-  const itemVotedByUserKey = [
-    "items_voted_by_user",
-    vote.userLogin,
-    vote.itemId,
-  ];
-  const userVotedForItemKey = [
-    "users_voted_for_item",
-    vote.itemId,
-    vote.userLogin,
-  ];
-  const [itemRes, userRes, itemVotedByUserRes, userVotedForItemRes] = await kv
-    .getMany<
-      [Item, User, Item, User]
-    >([itemKey, userKey, itemVotedByUserKey, userVotedForItemKey]);
-  const item = itemRes.value;
-  const user = userRes.value;
-  if (item === null) throw new Deno.errors.NotFound("Item not found");
-  if (user === null) throw new Deno.errors.NotFound("User not found");
-  if (itemVotedByUserRes.value === null) {
-    throw new Deno.errors.NotFound("Item voted by user not found");
-  }
-  if (userVotedForItemRes.value === null) {
-    throw new Deno.errors.NotFound("User voted for item not found");
-  }
-
-  const itemByUserKey = ["items_by_user", item.userLogin, item.id];
-
-  item.score--;
-
-  const res = await kv.atomic()
-    .check(itemRes)
-    .check(userRes)
-    .check(itemVotedByUserRes)
-    .check(userVotedForItemRes)
-    .set(itemKey, item)
-    .set(itemByUserKey, item)
-    .delete(itemVotedByUserKey)
-    .delete(userVotedForItemKey)
-    .commit();
-
-  if (!res.ok) throw new Error("Failed to delete vote");
-}
-
-/**
  * Returns a {@linkcode Deno.KvListIterator} which can be used to iterate over
  * the items voted by a given user in the database, in chronological order.
  *
  * @example
- * ```
+ * ```ts
  * import { listItemsVotedByUser } from "@/utils/db.ts";
  *
  * for await (const entry of listItemsVotedByUser("john")) {
- *   entry.value.itemId; // Returns "01H9YD2RVCYTBVJEYEJEV5D1S1"
+ *   entry.value.id; // Returns "01H9YD2RVCYTBVJEYEJEV5D1S1"
  *   entry.value.userLogin; // Returns "pedro"
  *   entry.key; // Returns ["items_voted_by_user", "01H9YD2RVCYTBVJEYEJEV5D1S1", "pedro"]
  *   entry.versionstamp; // Returns "00000000000000010000"
@@ -427,17 +324,42 @@ export async function updateUser(user: User) {
 }
 
 /**
- * Delete the user's session from the database.
+ * Updates the session ID of a given user in the database.
  *
  * @example
  * ```ts
- * import { deleteUserSession } from "@/utils/db.ts";
+ * import { updateUserSession } from "@/utils/db.ts";
  *
- * await deleteUserSession("jack");
+ * await updateUserSession({
+ *   login: "john",
+ *   sessionId: "xxx",
+ *   isSubscribed: false,
+ * }, "yyy");
  * ```
  */
-export async function deleteUserSession(sessionId: string) {
-  await kv.delete(["users_by_session", sessionId]);
+export async function updateUserSession(user: User, sessionId: string) {
+  const userKey = ["users", user.login];
+  const oldUserBySessionKey = ["users_by_session", user.sessionId];
+  const newUserBySessionKey = ["users_by_session", sessionId];
+  const newUser: User = { ...user, sessionId };
+
+  const atomicOp = kv.atomic()
+    .set(userKey, newUser)
+    .delete(oldUserBySessionKey)
+    .check({ key: newUserBySessionKey, versionstamp: null })
+    .set(newUserBySessionKey, newUser);
+
+  if (user.stripeCustomerId !== undefined) {
+    const usersByStripeCustomerKey = [
+      "users_by_stripe_customer",
+      user.stripeCustomerId,
+    ];
+    atomicOp
+      .set(usersByStripeCustomerKey, user);
+  }
+
+  const res = await atomicOp.commit();
+  if (!res.ok) throw new Error("Failed to update user session");
 }
 
 /**
@@ -497,6 +419,7 @@ export async function getUserBySession(sessionId: string) {
  * user?.sessionId; // Returns "xxx"
  * user?.isSubscribed; // Returns false
  * user?.stripeCustomerId; // Returns "123"
+ * ```
  */
 export async function getUserByStripeCustomer(stripeCustomerId: string) {
   const res = await kv.get<User>([
@@ -511,7 +434,7 @@ export async function getUserByStripeCustomer(stripeCustomerId: string) {
  * the users in the database.
  *
  * @example
- * ```
+ * ```ts
  * import { listUsers } from "@/utils/db.ts";
  *
  * for await (const entry of listUsers()) {

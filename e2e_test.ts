@@ -12,9 +12,7 @@ import {
   listItemsByUser,
   randomItem,
   randomUser,
-  randomVote,
   User,
-  Vote,
 } from "@/utils/db.ts";
 import { stripe } from "@/utils/stripe.ts";
 import {
@@ -74,6 +72,22 @@ function assertRedirect(response: Response, location: string) {
   assert(isRedirectStatus(response.status));
   assert(response.headers.get("location")?.includes(location));
 }
+
+Deno.test("[e2e] security headers", async () => {
+  const resp = await handler(new Request("http://localhost"));
+
+  assertEquals(
+    resp.headers.get("strict-transport-security"),
+    "max-age=63072000;",
+  );
+  assertEquals(
+    resp.headers.get("referrer-policy"),
+    "strict-origin-when-cross-origin",
+  );
+  assertEquals(resp.headers.get("x-content-type-options"), "nosniff");
+  assertEquals(resp.headers.get("x-frame-options"), "SAMEORIGIN");
+  assertEquals(resp.headers.get("x-xss-protection"), "1; mode=block");
+});
 
 Deno.test("[e2e] GET /", async () => {
   const resp = await handler(new Request("http://localhost"));
@@ -383,58 +397,12 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
   });
 });
 
-Deno.test("[e2e] DELETE /api/items/[id]/vote", async (test) => {
+Deno.test("[e2e] POST /api/vote", async (test) => {
   const item = randomItem();
   const user = randomUser();
   await createItem(item);
   await createUser(user);
-  const vote: Vote = {
-    ...randomVote(),
-    itemId: item.id,
-    userLogin: user.login,
-  };
-  await createVote(vote);
-  const url = `http://localhost/api/items/${item.id}/vote`;
-
-  await test.step("serves unauthorized response if the session user is not signed in", async () => {
-    const resp = await handler(new Request(url, { method: "DELETE" }));
-
-    assertEquals(resp.status, Status.Unauthorized);
-    assertText(resp);
-    assertEquals(await resp.text(), "User must be signed in");
-  });
-
-  await test.step("serves not found response if the item is not found", async () => {
-    const resp = await handler(
-      new Request("http://localhost/api/items/bob-ross/vote", {
-        method: "DELETE",
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertEquals(resp.status, Status.NotFound);
-    assertText(resp);
-    assertEquals(await resp.text(), "Item not found");
-  });
-
-  await test.step("serves no content when it deletes a vote", async () => {
-    const resp = await handler(
-      new Request(url, {
-        method: "DELETE",
-        headers: { cookie: "site-session=" + user.sessionId },
-      }),
-    );
-
-    assertEquals(resp.status, Status.NoContent);
-  });
-});
-
-Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
-  const item = randomItem();
-  const user = randomUser();
-  await createItem(item);
-  await createUser(user);
-  const url = `http://localhost/api/items/${item.id}/vote`;
+  const url = `http://localhost/api/vote?item_id=${item.id}`;
 
   await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "POST" }));
@@ -446,7 +414,7 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
 
   await test.step("serves not found response if the item is not found", async () => {
     const resp = await handler(
-      new Request("http://localhost/api/items/bob-ross/vote", {
+      new Request("http://localhost/api/vote?item_id=bob-ross", {
         method: "POST",
         headers: { cookie: "site-session=" + user.sessionId },
       }),
@@ -460,7 +428,6 @@ Deno.test("[e2e] POST /api/items/[id]/vote", async (test) => {
   await test.step("creates a vote", async () => {
     const item = { ...randomItem(), userLogin: user.login };
     await createItem(item);
-    const url = `http://localhost/api/items/${item.id}/vote`;
     const resp = await handler(
       new Request(url, {
         method: "POST",
@@ -876,4 +843,13 @@ Deno.test("[e2e] GET /api/me/votes", async () => {
   assertEquals(resp.status, Status.OK);
   assertJson(resp);
   assertArrayIncludes(body, [{ ...item1, score: 1 }, { ...item2, score: 1 }]);
+});
+
+Deno.test("[e2e] GET /welcome", async () => {
+  Deno.env.delete("GITHUB_CLIENT_ID");
+
+  const req = new Request("http://localhost/");
+  const resp = await handler(req);
+
+  assertRedirect(resp, "/welcome");
 });

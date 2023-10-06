@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { useComputed, useSignal } from "@preact/signals";
+import { Signal, useComputed, useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { type Item } from "@/utils/db.ts";
 import { LINK_STYLES } from "@/utils/constants.ts";
@@ -18,78 +18,36 @@ async function fetchVotedItems() {
 
 function EmptyItemsList() {
   return (
-    <>
-      <div class="flex flex-col justify-center items-center gap-2">
-        <div class="flex flex-col items-center gap-2 pt-16">
-          <IconInfo class="w-10 h-10 text-gray-400 dark:text-gray-600" />
-          <p class="text-center font-medium">No items found</p>
-        </div>
-
-        <a
-          href="/submit"
-          class="inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-primary hover:underline"
-        >
-          Submit your project
-        </a>
-      </div>
-    </>
-  );
-}
-
-interface StaticVoteButton {
-  /** Number of votes for the item */
-  score: number;
-}
-
-function StaticVoteButton(props: StaticVoteButton) {
-  return (
-    <a
-      class="text-inherit pr-2 text-center"
-      title="Sign in to vote"
-      href="/signin"
-    >
-      ▲
-      <br />
-      {props.score}
-    </a>
+    <div class="flex flex-col justify-center items-center gap-2 pt-16">
+      <IconInfo class="w-10 h-10 text-gray-400 dark:text-gray-600" />
+      <p>No items found</p>
+      <a href="/submit" class="text-primary hover:underline">
+        Submit your project &#8250;
+      </a>
+    </div>
   );
 }
 
 interface VoteButtonProps {
   item: Item;
-  /** Whether the item has been voted-for by the signed-in user */
-  isVoted: boolean;
+  scoreSig: Signal<number>;
+  isVotedSig: Signal<boolean>;
 }
 
 function VoteButton(props: VoteButtonProps) {
-  const isVoted = useSignal(props.isVoted);
-  const score = useSignal(props.item.score);
-  const url = `/api/items/${props.item.id}/vote`;
-
   async function onClick(event: MouseEvent) {
     if (event.detail !== 1) return;
-    const method = isVoted.value ? "DELETE" : "POST";
-    const resp = await fetch(url, { method });
-
-    if (resp.status === 401) {
-      window.location.href = "/signin";
-      return;
-    }
-    if (!resp.ok) throw new Error(`Request failed: ${method} ${url}`);
-
-    isVoted.value = !isVoted.value;
-    method === "POST" ? score.value++ : score.value--;
+    const resp = await fetch(`/api/vote?item_id=${props.item.id}`, {
+      method: "POST",
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    props.scoreSig.value++;
+    props.isVotedSig.value = true;
   }
 
   return (
-    <button
-      class={(isVoted.value ? "text-primary" : "text-inherit") +
-        " pr-2 text-center"}
-      onClick={onClick}
-    >
+    <button onClick={onClick} class="hover:text-primary">
       ▲
-      <br />
-      {score}
     </button>
   );
 }
@@ -103,16 +61,33 @@ interface ItemSummaryProps {
 }
 
 function ItemSummary(props: ItemSummaryProps) {
+  const scoreSig = useSignal(props.item.score);
+  const isVotedSig = useSignal(props.isVoted);
+
   return (
     <div class="py-2 flex gap-4">
-      {props.isSignedIn
-        ? (
+      <div
+        class={`pr-2 text-center flex flex-col justify-center ${
+          isVotedSig.value ? "text-primary" : "hover:text-primary"
+        }`}
+      >
+        {!props.isSignedIn && (
+          <a
+            title="Sign in to vote"
+            href="/signin"
+          >
+            ▲
+          </a>
+        )}
+        {props.isSignedIn && !isVotedSig.value && (
           <VoteButton
             item={props.item}
-            isVoted={props.isVoted}
+            scoreSig={scoreSig}
+            isVotedSig={isVotedSig}
           />
-        )
-        : <StaticVoteButton score={props.item.score} />}
+        )}
+        <p>{scoreSig}</p>
+      </div>
       <div class="space-y-1">
         <p>
           <a
