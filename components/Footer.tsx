@@ -35,16 +35,7 @@ export default function Footer(props: FooterProps) {
           TikTok
         </a>
         <a
-          href="/blog"
-          className={props.url.pathname === "/blog" ? ACTIVE_LINK_STYLES : LINK_STYLES}
-        >
-          Blog
-        </a>
-        <a href="/feed" aria-label="Arvrtise Real Estate RSS Feed" className={LINK_STYLES}>
-          <IconRss className="h-6 w-6" />
-        </a>
-        <a
-          href="https://discord.gg/gvmgQsGQUk"
+          href="https://discord.gg/Zy4TfphTCX"
           target="_blank"
           aria-label="Arvrtise Real Estate on Discord"
           className={LINK_STYLES}
