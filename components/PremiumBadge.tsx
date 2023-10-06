@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'https://cdn.skypack.dev/react';
 
 interface PremiumBadgeProps {
-  class?: string;
+  className?: string; // Corrected the prop name to "className"
 }
 
 export function PremiumBadge(props: PremiumBadgeProps) {
   return (
     <span
       role="img"
-      aria-label="Arvrtise Real Estate Premium" // Added aria-label for accessibility
-      className={props.class}
+      aria-label="Arvrtise Real Estate Premium"
+      className={props.className} // Corrected the prop name to "className"
     >
       🏢
     </span>
