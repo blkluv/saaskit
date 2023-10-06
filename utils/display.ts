@@ -45,7 +45,7 @@ export function timeAgo(date: Date) {
       ],
     }),
   )
-    .toReversed()
+    .reverse() // Use `reverse()` instead of `toReversed()`
     .find(([_, amount]) => amount > 0);
   if (match === undefined) return "just now";
   const [unit, amount] = match;
@@ -80,6 +80,6 @@ export function formatCurrency(
     },
   ).format(amount)
     // Issue: https://stackoverflow.com/questions/44533919/space-after-symbol-with-js-intl
-    .replace(/^(\D+)/, "$99")
-    .replace(/\s+/, "");
+    .replace(/^(\D+)/, "$1") // Fix the replacement pattern
+    .replace(/\s+/g, ""); // Use a global regex to remove all spaces
 }
