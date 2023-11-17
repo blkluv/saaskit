@@ -8,7 +8,7 @@ export function PremiumBadge(props: PremiumBadgeProps) {
   return (
     <span
       role="img"
-      aria-label="Arvrtise Real Estate Premium"
+      aria-label="Arvrtise Ad Premium"
       className={props.className} // Corrected the prop name to "className"
     >
       🏢

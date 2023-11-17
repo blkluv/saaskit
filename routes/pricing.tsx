@@ -22,7 +22,7 @@ function FreePlanCard() {
             Free
           </h2>
           <p class="text-gray-500">
-            Discover and Arvrtise real estate.
+            Discover and Arvrtise Ad.
           </p>
         </div>
         <p>

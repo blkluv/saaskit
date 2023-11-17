@@ -1,5 +1,5 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-export const SITE_NAME = "Arvrtise Real Estate";
+export const SITE_NAME = "Arvrtise Ad";
 export const SITE_DESCRIPTION = "DIY real estate Arvrtising.";
 
 /**

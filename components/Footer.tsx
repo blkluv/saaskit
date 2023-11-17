@@ -29,7 +29,7 @@ export default function Footer(props: FooterProps) {
       <p>© {SITE_NAME}</p>
       <nav className={NAV_STYLES}>
       <a
-          href="https://tiktok.com/@ad.realestate"
+          href="https://tiktok.com/@arvrtise"
           className={props.url.pathname === "/blog" ? ACTIVE_LINK_STYLES : LINK_STYLES}
         >
           TikTok
@@ -37,7 +37,7 @@ export default function Footer(props: FooterProps) {
         <a
           href="https://discord.gg/Zy4TfphTCX"
           target="_blank"
-          aria-label="Arvrtise Real Estate on Discord"
+          aria-label="Arvrtise Ad on Discord"
           className={LINK_STYLES}
         >
           <IconBrandDiscord className="h-6 w-6" />
