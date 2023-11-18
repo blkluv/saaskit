@@ -50,10 +50,10 @@ export default defineRoute<State>((_req, ctx) => {
       <main class="flex-1 flex flex-col justify-center mx-auto w-full space-y-16 p-4 max-w-6xl">
         <div class="text-center">
           <h1 class={HEADING_STYLES}>
-            DIY Real Estate Arvrtising
+            DIY ADS
           </h1>
           <p class="text-gray-500">
-            Let the community know about your real estate project.
+            Let the community know about your project.
           </p>
         </div>
         <div class="flex flex-col md:flex-row gap-8 md:gap-16 md:items-center">
@@ -94,7 +94,7 @@ export default defineRoute<State>((_req, ctx) => {
                 type="text"
                 name="title"
                 required
-                placeholder="Arvrtise Ad: the best place to share your real estate project"
+                placeholder="Arvrtise Ad: the reddit of Ads"
                 disabled={!ctx.state.sessionUser}
               />
             </div>

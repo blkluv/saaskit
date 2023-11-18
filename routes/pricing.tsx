@@ -127,7 +127,7 @@ function EnterprisePricingCard() {
             Enterprise
           </h2>
           <p class="text-gray-500">
-            Customize your Real Estate Arvrtising campaign .
+            Customize your DIY Ad campaign .
           </p>
         </div>
         <p>

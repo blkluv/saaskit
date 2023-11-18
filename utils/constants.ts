@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-export const SITE_NAME = "Arvrtise Ad";
-export const SITE_DESCRIPTION = "DIY real estate Arvrtising.";
+export const SITE_NAME = "Arvrtise AD";
+export const SITE_DESCRIPTION = "DIY ADS.";
 
 /**
  * These are base styles for some elements. This approach is chosen as it avoids more complex alternatives:
