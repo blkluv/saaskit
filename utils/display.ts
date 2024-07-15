@@ -63,7 +63,7 @@ export function timeAgo(date: Date) {
  * ```ts
  * import { formatCurrency } from "@/utils/display.ts";
  *
- * formatCurrency(99, "USD"); // Returns "$99"
+ * formatCurrency(5, "USD"); // Returns "$5"
  * ```
  */
 export function formatCurrency(
@@ -84,7 +84,7 @@ export function formatCurrency(
     .replace(/\s+/, "");
 }
 
-const monthlyCost = 99; // Updated the monthly cost to $99
+const monthlyCost = 5; // Updated the monthly cost to $99
 const currencySymbol = "USD"; // The currency symbol for US Dollars
 const formattedCost = formatCurrency(monthlyCost, currencySymbol);
-console.log(formattedCost); // This will log "$99" to the console
+console.log(formattedCost); // This will log "$5" to the console
