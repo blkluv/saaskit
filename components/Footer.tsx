@@ -28,16 +28,18 @@ export default function Footer(props: FooterProps) {
     <footer className={`${SITE_BAR_STYLES} flex-col md:flex-row mt-8`}>
       <p>© {SITE_NAME}</p>
       <nav className={NAV_STYLES}>
-      <a
-          href="https://tiktok.com/@arvrtise"
-          className={props.url.pathname === "/blog" ? ACTIVE_LINK_STYLES : LINK_STYLES}
+        <a
+          href="https://tiktok.com/@atl5d"
+          className={props.url.pathname === "/blog"
+            ? ACTIVE_LINK_STYLES
+            : LINK_STYLES}
         >
           TikTok
         </a>
         <a
-          href="https://discord.gg/Zy4TfphTCX"
+          href="https://discord.gg/HkZ4pazQFb"
           target="_blank"
-          aria-label="Arvrtise Ad on Discord"
+          aria-label="ATL5D Discord"
           className={LINK_STYLES}
         >
           <IconBrandDiscord className="h-6 w-6" />

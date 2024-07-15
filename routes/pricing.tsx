@@ -22,7 +22,7 @@ function FreePlanCard() {
             Free
           </h2>
           <p class="text-gray-500">
-            Discover and Arvrtise Ad.
+            Discover and ATL5D Vote.
           </p>
         </div>
         <p>
@@ -87,11 +87,11 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          Downvoting
+          Down voting
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          Official pro user badge
+          Official ATL5D pro user badge
         </p>
       </div>
 
@@ -127,7 +127,7 @@ function EnterprisePricingCard() {
             Enterprise
           </h2>
           <p class="text-gray-500">
-            Customize your DIY Ad campaign .
+            Customize your voting campaign .
           </p>
         </div>
         <p>
@@ -140,17 +140,17 @@ function EnterprisePricingCard() {
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
           Direct line to{" "}
-          <a href="/users/hahz" class="text-secondary">The Wizard of Hahz</a> 
+          <a href="/users/hahz" class="text-secondary">The Wizard of Hahz</a>
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
-          Paid ad campaign
+          Paid voting campaign
         </p>
       </div>
 
       <div class="text-center">
         <a
-          href="mailto:info@arvrtise.com"
+          href="mailto:hi@atl5d.com"
           class={`${BUTTON_STYLES} w-full rounded-md block`}
         >
           Contact us

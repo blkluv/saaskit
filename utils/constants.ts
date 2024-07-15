@@ -1,6 +1,6 @@
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
-export const SITE_NAME = "Arvrtise AD";
-export const SITE_DESCRIPTION = "DIY ADS.";
+export const SITE_NAME = "ATL5D Vote";
+export const SITE_DESCRIPTION = "Upvote your favorite Atlanta things.";
 
 /**
  * These are base styles for some elements. This approach is chosen as it avoids more complex alternatives:

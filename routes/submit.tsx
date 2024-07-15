@@ -71,7 +71,8 @@ export default defineRoute<State>((_req, ctx) => {
               <strong>Do</strong> include a description with your title.
 
               <div class="text-sm text-gray-500">
-                E.g. “Arvrtise Ad: with your What3Words property address keep.it.simple”
+                E.g. “Real estate with your What3Words property address
+                ///keep.it.simple”
               </div>
             </div>
             <p>
@@ -94,7 +95,7 @@ export default defineRoute<State>((_req, ctx) => {
                 type="text"
                 name="title"
                 required
-                placeholder="Arvrtise Ad: the reddit of Ads"
+                placeholder="ATL5D Vote: the reddit of Ads"
                 disabled={!ctx.state.sessionUser}
               />
             </div>
@@ -111,7 +112,7 @@ export default defineRoute<State>((_req, ctx) => {
                 type="url"
                 name="url"
                 required
-                placeholder="https://realestate.arvrtise.com"
+                placeholder="https://vote.atl5d.com"
                 disabled={!ctx.state.sessionUser}
               />
             </div>
