@@ -1,5 +1,5 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { RedirectStatus, Status } from "std/http/http_status.ts";
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
+import { RedirectStatus, STATUS_CODE } from "$std/http/status.ts";
 
 /**
  * Returns a response that redirects the client to the given location (URL).
@@ -19,7 +19,7 @@ import { RedirectStatus, Status } from "std/http/http_status.ts";
  */
 export function redirect(
   location: string,
-  status: Status.Created | RedirectStatus = Status.SeeOther,
+  status: typeof STATUS_CODE.Created | RedirectStatus = STATUS_CODE.SeeOther,
 ) {
   return new Response(null, {
     headers: {
@@ -66,4 +66,18 @@ export async function fetchValues<T>(endpoint: string, cursor: string) {
   const resp = await fetch(url);
   if (!resp.ok) throw new Error(`Request failed: GET ${url}`);
   return await resp.json() as { values: T[]; cursor: string };
+}
+
+export class UnauthorizedError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class BadRequestError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "BadRequestError";
+  }
 }

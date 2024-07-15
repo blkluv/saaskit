@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 // Copyright 2023 the Deno authors. All rights reserved. MIT license.
 export const SITE_NAME = "ATL5D Vote";
 export const SITE_DESCRIPTION = "Upvote your favorite Atlanta things.";
@@ -19,3 +20,8 @@ export const LINK_STYLES =
 export const ACTIVE_LINK_STYLES = LINK_STYLES + " !text-black !dark:text-white";
 export const HEADING_STYLES = "text-3xl font-bold";
 export const HEADING_WITH_MARGIN_STYLES = HEADING_STYLES + " mb-8";
+=======
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
+export const SITE_NAME = "Deno Hunt (Beta)";
+export const SITE_DESCRIPTION = "Discover new Deno projects. Share your own.";
+>>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81

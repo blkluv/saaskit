@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 /**
  * This script prints all entries in the KV database formatted as JSON. This
  * can be used to create a backup file.
@@ -15,9 +15,10 @@ function replacer(_key: unknown, value: unknown) {
   return typeof value === "bigint" ? value.toString() : value;
 }
 
-const iter = kv.list({ prefix: [] });
-const items = [];
-for await (const { key, value } of iter) items.push({ key, value });
+const items = await Array.fromAsync(
+  kv.list({ prefix: [] }),
+  ({ key, value }) => ({ key, value }),
+);
 console.log(JSON.stringify(items, replacer, 2));
 
 kv.close();

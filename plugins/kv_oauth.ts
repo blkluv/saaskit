@@ -1,11 +1,11 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import type { Plugin } from "$fresh/server.ts";
 import {
   createGitHubOAuthConfig,
   handleCallback,
   signIn,
   signOut,
-} from "kv_oauth";
+} from "kv_oauth/mod.ts";
 import {
   createUser,
   getUser,
@@ -14,6 +14,9 @@ import {
 } from "@/utils/db.ts";
 import { isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import { getGitHubUser } from "@/utils/github.ts";
+
+// Exported for mocking and spying in e2e tests
+export const _internals = { handleCallback };
 
 /**
  * This custom plugin centralizes all authentication logic using the
@@ -33,7 +36,7 @@ export default {
     {
       path: "/callback",
       handler: async (req) => {
-        const { response, tokens, sessionId } = await handleCallback(
+        const { response, tokens, sessionId } = await _internals.handleCallback(
           req,
           createGitHubOAuthConfig(),
         );

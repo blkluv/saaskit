@@ -1,11 +1,10 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { Signal, useComputed, useSignal } from "@preact/signals";
 import { useEffect } from "preact/hooks";
 import { type Item } from "@/utils/db.ts";
-import { LINK_STYLES } from "@/utils/constants.ts";
 import IconInfo from "tabler_icons_tsx/info-circle.tsx";
 import { fetchValues } from "@/utils/http.ts";
-import { decodeTime } from "std/ulid/mod.ts";
+import { decodeTime } from "$std/ulid/mod.ts";
 import { timeAgo } from "@/utils/display.ts";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 
@@ -19,7 +18,7 @@ async function fetchVotedItems() {
 function EmptyItemsList() {
   return (
     <div class="flex flex-col justify-center items-center gap-2 pt-16">
-      <IconInfo class="w-10 h-10 text-gray-400 dark:text-gray-600" />
+      <IconInfo class="size-10 text-gray-400 dark:text-gray-600" />
       <p>No items found</p>
       <a href="/submit" class="text-primary hover:underline">
         Submit your project &#8250;
@@ -91,7 +90,7 @@ function ItemSummary(props: ItemSummaryProps) {
       <div class="space-y-1">
         <p>
           <a
-            class="visited:(text-[purple] dark:text-[lightpink]) hover:underline mr-4"
+            class="visited:text-[purple] visited:dark:text-[lightpink] hover:underline mr-4"
             href={props.item.url}
           >
             {props.item.title}
@@ -167,7 +166,7 @@ export default function ItemsList(props: ItemsListProps) {
   }, []);
 
   if (isLoadingSig.value === undefined) {
-    return <p class={LINK_STYLES}>Loading...</p>;
+    return <p class="link-styles">Loading...</p>;
   }
 
   return (
@@ -185,7 +184,7 @@ export default function ItemsList(props: ItemsListProps) {
         })
         : <EmptyItemsList />}
       {cursorSig.value !== "" && (
-        <button onClick={loadMoreItems} class={LINK_STYLES}>
+        <button onClick={loadMoreItems} class="link-styles">
           {isLoadingSig.value ? "Loading..." : "Load more"}
         </button>
       )}

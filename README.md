@@ -3,6 +3,7 @@
 [![Discord Chat](https://img.shields.io/discord/684898665143206084?logo=discord&style=social)](https://discord.gg/deno)
 [![CI](https://github.com/denoland/saaskit/actions/workflows/ci.yml/badge.svg)](https://github.com/denoland/saaskit/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/denoland/saaskit/branch/main/graph/badge.svg?token=77F8TYTP13)](https://codecov.io/gh/denoland/saaskit)
+[![Built with the Deno Standard Library](https://raw.githubusercontent.com/denoland/deno_std/main/badge.svg)](https://deno.land/std)
 
 [Deno SaaSKit](https://deno.com/saaskit) is an open-sourced, highly performant
 template for building your SaaS quickly and easily.
@@ -173,7 +174,7 @@ See other examples of blog post files in [/posts](/posts).
 
 You can customize theme options such as spacing, color, etc. By default, Deno
 SaaSKit comes with `primary` and `secondary` colors predefined within
-`twind.config.ts`. Change these values to match your desired color scheme.
+`tailwind.config.ts`. Change these values to match your desired color scheme.
 
 ### Cover Image
 
@@ -198,14 +199,20 @@ This section assumes that a
 ### Deploy to [Deno Deploy](https://deno.com/deploy)
 
 1. Clone this repository for your SaaSKit project.
-1. Sign into [Deno Deploy](https://dash.deno.com) with your GitHub account.
+1. Update your `.github/workflows/deploy.yml` file as needed. Hints are in the
+   file.
+1. Sign into [Deno Deploy](https://dash.deno.com/projects) with your GitHub
+   account.
+1. Click **+ New Project**.
 1. Select your GitHub organization or user, repository, and branch.
-1. Select **Automatic** deployment mode and `main.ts` as the entry point.
-1. Click **Link**, which will start the deployment.
+1. Click **Edit mode** and select **Build step with GitHub Actions** as the
+   build mode and `main.ts` as the entry point.
+1. Click **Add Build Step** and wait until the GitHub Actions Workflow is
+   complete.
 1. Once the deployment is complete, click on **Settings** and add the production
    environmental variables, then hit **Save**.
 
-You should now be able to visit your newly deployed SaaS.
+You should now be able to visit your newly deployed SaaS website.
 
 ### Deploy to any VPS with Docker
 
@@ -267,6 +274,14 @@ git rev-parse HEAD
 1. Optionally,
    [set up your Stripe branding](https://dashboard.stripe.com/settings/branding)
    to customize the look and feel of your Stripe checkout page.
+
+### Google Analytics (Optional)
+
+Set `GA4_MEASUREMENT_ID` in your production environment to enable Google
+Analytics.
+
+> Note: it is not recommended to set this locally, otherwise your tests and
+> debugging requests will be logged.
 
 ## REST API Reference
 
@@ -460,9 +475,8 @@ apply, such as:
 
 ## Community and Resources
 
-Join
-[the `#saaskit` channel in Deno's Discord](https://discord.com/channels/684898665143206084/1085986084653109438)
-to meet other SaaSKit developers, ask questions, and get unblocked.
+Join [the `#saaskit` channel in Deno's Discord](https://discord.gg/deno) to meet
+other SaaSKit developers, ask questions, and get unblocked.
 
 Here's a list of articles, how to guides, and videos about SaaSKit:
 

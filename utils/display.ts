@@ -1,5 +1,5 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { difference } from "std/datetime/difference.ts";
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
+import { difference } from "$std/datetime/difference.ts";
 
 /**
  * Returns a pluralized string for the given amount and unit.
@@ -22,7 +22,7 @@ export function pluralize(amount: number, unit: string) {
  * @example
  * ```ts
  * import { timeAgo } from "@/utils/display.ts";
- * import { SECOND, MINUTE, HOUR } from "std/datetime/constants.ts";
+ * import { SECOND, MINUTE, HOUR } from "$std/datetime/constants.ts";
  *
  * timeAgo(new Date()); // Returns "just now"
  * timeAgo(new Date(Date.now() - 3 * HOUR)); // Returns "3 hours ago"
@@ -55,7 +55,7 @@ export function timeAgo(date: Date) {
 
 /**
  * Returns a formatted string based on the given amount of currency and the
- * machine's preferred language.
+ * `en-US` locale. Change the locale for your use case as required.
  *
  * @see {@linkcode Intl.NumberFormat}
  *
@@ -71,7 +71,7 @@ export function formatCurrency(
   currency: string,
 ): string {
   return new Intl.NumberFormat(
-    navigator.language,
+    "en-US",
     {
       style: "currency",
       currency,

@@ -1,8 +1,8 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 // Copied from std/_tools/check_license.ts
 
-import { walk } from "std/fs/walk.ts";
-import { globToRegExp } from "std/path/glob.ts";
+import { walk } from "$std/fs/walk.ts";
+import { globToRegExp } from "$std/path/glob_to_regexp.ts";
 
 const EXTENSIONS = [".ts", ".tsx"];
 const EXCLUDED_DIRS = [
@@ -14,10 +14,11 @@ const ROOT = new URL("../", import.meta.url);
 const CHECK = Deno.args.includes("--check");
 const CURRENT_YEAR = new Date().getFullYear();
 const RX_COPYRIGHT = new RegExp(
-  `// Copyright ([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\n`,
+  `// Copyright 2023-([0-9]{4}) the Deno authors\\. All rights reserved\\. MIT license\\.\\n`,
+  "m",
 );
 const COPYRIGHT =
-  `// Copyright ${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
+  `// Copyright 2023-${CURRENT_YEAR} the Deno authors. All rights reserved. MIT license.`;
 
 let failed = false;
 
@@ -25,7 +26,7 @@ for await (
   const { path } of walk(ROOT, {
     exts: EXTENSIONS,
     skip: [
-      ...EXCLUDED_DIRS.map((path) => globToRegExp(path)),
+      ...EXCLUDED_DIRS.map((path) => globToRegExp(ROOT.pathname + path)),
       new RegExp("fresh.gen.ts"),
     ],
     includeDirs: false,

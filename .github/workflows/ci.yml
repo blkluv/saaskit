@@ -13,9 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-22.04
-          - windows-2022
-          - macOS-12
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
 
     steps:
       - name: Setup repo
@@ -25,7 +25,7 @@ jobs:
         uses: denoland/setup-deno@v1
 
       - name: Check typos
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-latest'
         uses: crate-ci/typos@master
 
       - name: Check formatting, linting, license headers, types and run tests
@@ -35,7 +35,7 @@ jobs:
         run: deno task cov:gen
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           name: ${{ matrix.os }}
           files: cov.lcov

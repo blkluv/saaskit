@@ -1,11 +1,5 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import {
-  ACTIVE_LINK_STYLES,
-  LINK_STYLES,
-  NAV_STYLES,
-  SITE_BAR_STYLES,
-  SITE_NAME,
-} from "@/utils/constants.ts";
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
+import { SITE_NAME } from "@/utils/constants.ts";
 import IconBrandDiscord from "tabler_icons_tsx/brand-discord.tsx";
 import IconRss from "tabler_icons_tsx/rss.tsx";
 
@@ -19,6 +13,7 @@ function MadeWithFreshBadge() {
   );
 }
 
+<<<<<<< HEAD
 export interface FooterProps {
   // ... (previous FooterProps)
 }
@@ -35,14 +30,47 @@ export default function Footer(props: FooterProps) {
             : LINK_STYLES}
         >
           TikTok
+=======
+export default function Footer() {
+  return (
+    <footer class="site-bar-styles flex-col md:flex-row mt-8">
+      <p>© {SITE_NAME}</p>
+      <nav class="nav-styles">
+        <a
+          href="/blog"
+          class="link-styles data-[current]:!text-black data-[current]:dark:!text-white"
+        >
+          Blog
+        </a>
+        <a href="/feed" aria-label="Deno Hunt RSS Feed" class="link-styles">
+          <IconRss class="size-6" />
+        </a>
+        <a
+          href="https://discord.gg/deno"
+          target="_blank"
+          aria-label="Deno SaaSKit on Discord"
+          class="link-styles"
+        >
+          <IconBrandDiscord class="size-6" />
+>>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
         </a>
         <a
           href="https://discord.gg/HkZ4pazQFb"
           target="_blank"
+<<<<<<< HEAD
           aria-label="ATL5D Discord"
           className={LINK_STYLES}
         >
           <IconBrandDiscord className="h-6 w-6" />
+=======
+          aria-label="Deno SaaSKit repo on GitHub"
+          class="link-styles"
+        >
+          <IconBrandGithub class="size-6" />
+        </a>
+        <a href="https://fresh.deno.dev">
+          <MadeWithFreshBadge />
+>>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
         </a>
       </nav>
     </footer>

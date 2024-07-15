@@ -1,11 +1,10 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { Plugin } from "$fresh/server.ts";
-import type { MiddlewareHandlerContext } from "$fresh/server.ts";
-import { getSessionId } from "kv_oauth";
+import type { FreshContext } from "$fresh/server.ts";
+import { getSessionId } from "kv_oauth/mod.ts";
 import { getUserBySession } from "@/utils/db.ts";
 import type { User } from "@/utils/db.ts";
-import { createHttpError } from "std/http/http_errors.ts";
-import { Status } from "std/http/http_status.ts";
+import { UnauthorizedError } from "@/utils/http.ts";
 
 export interface State {
   sessionUser?: User;
@@ -17,13 +16,13 @@ export function assertSignedIn(
   ctx: { state: State },
 ): asserts ctx is { state: SignedInState } {
   if (ctx.state.sessionUser === undefined) {
-    throw createHttpError(Status.Unauthorized, "User must be signed in");
+    throw new UnauthorizedError("User must be signed in");
   }
 }
 
 async function setSessionState(
   req: Request,
-  ctx: MiddlewareHandlerContext<State>,
+  ctx: FreshContext<State>,
 ) {
   if (ctx.destination !== "route") return await ctx.next();
 
@@ -42,7 +41,7 @@ async function setSessionState(
 
 async function ensureSignedIn(
   _req: Request,
-  ctx: MiddlewareHandlerContext<State>,
+  ctx: FreshContext<State>,
 ) {
   assertSignedIn(ctx);
   return await ctx.next();

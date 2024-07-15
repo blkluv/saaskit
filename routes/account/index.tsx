@@ -1,7 +1,6 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import { defineRoute } from "$fresh/server.ts";
 import type { SignedInState } from "@/plugins/session.ts";
-import { BUTTON_STYLES, LINK_STYLES } from "@/utils/constants.ts";
 import { isStripeEnabled } from "@/utils/stripe.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
@@ -27,7 +26,7 @@ export default defineRoute<SignedInState>((_req, ctx) => {
               <span>
                 {sessionUser.login}
               </span>
-              <a href={`/users/${sessionUser.login}`} class={LINK_STYLES}>
+              <a href={`/users/${sessionUser.login}`} class="link-styles">
                 Go to my profile &#8250;
               </a>
             </p>
@@ -39,7 +38,7 @@ export default defineRoute<SignedInState>((_req, ctx) => {
                 {sessionUser.isSubscribed
                   ? (
                     <>
-                      Premium <PremiumBadge class="w-5 h-5 inline" />
+                      Premium <PremiumBadge class="size-5 inline" />
                     </>
                   )
                   : "Free"}
@@ -47,7 +46,7 @@ export default defineRoute<SignedInState>((_req, ctx) => {
               {isStripeEnabled() && (
                 <span>
                   <a
-                    class={LINK_STYLES}
+                    class="link-styles"
                     href={`/account/${action.toLowerCase()}`}
                   >
                     {action} &#8250;
@@ -59,7 +58,7 @@ export default defineRoute<SignedInState>((_req, ctx) => {
         </ul>
         <a
           href="/signout?success_url=/"
-          class={`${BUTTON_STYLES} block text-center`}
+          class="button-styles block text-center"
         >
           Sign out
         </a>

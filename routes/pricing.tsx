@@ -1,6 +1,5 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import type { State } from "@/plugins/session.ts";
-import { BUTTON_STYLES } from "@/utils/constants.ts";
 import { assertIsPrice, isStripeEnabled, stripe } from "@/utils/stripe.ts";
 import { formatCurrency } from "@/utils/display.ts";
 import Stripe from "stripe";
@@ -10,8 +9,8 @@ import { defineRoute } from "$fresh/server.ts";
 import { PremiumBadge } from "@/components/PremiumBadge.tsx";
 
 const CARD_STYLES =
-  "shadow-md flex flex-col flex-1 space-y-8 p-8 ring-1 ring-gray-300 rounded-xl dark:bg-gray-700 bg-gradient-to-r";
-const CHECK_STYLES = "w-6 h-6 text-primary shrink-0 inline-block mr-2";
+  "shadow-md flex flex-col flex-1 space-y-8 p-8 ring-1 ring-gray-300 ring-opacity-50 rounded-xl dark:bg-gray-700 bg-gradient-to-r";
+const CHECK_STYLES = "size-6 text-primary shrink-0 inline-block mr-2";
 
 function FreePlanCard() {
   return (
@@ -45,7 +44,7 @@ function FreePlanCard() {
       <div class="text-center">
         <a
           href="/account/manage"
-          class={`${BUTTON_STYLES} w-full rounded-md block`}
+          class="button-styles w-full rounded-md block"
         >
           Manage
         </a>
@@ -91,7 +90,11 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         </p>
         <p>
           <IconCheckCircle class={CHECK_STYLES} />
+<<<<<<< HEAD
           Official ATL5D pro user badge
+=======
+          Official pro user badge <PremiumBadge class="size-5 inline" />
+>>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
         </p>
       </div>
 
@@ -99,7 +102,7 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
         {props.isSubscribed
           ? (
             <a
-              class={`${BUTTON_STYLES} w-full rounded-md block`}
+              class="button-styles w-full rounded-md block"
               href="/account/manage"
             >
               Manage
@@ -107,7 +110,7 @@ function PremiumPlanCard(props: PremiumCardPlanProps) {
           )
           : (
             <a
-              class={`${BUTTON_STYLES} w-full rounded-md block`}
+              class="button-styles w-full rounded-md block"
               href="/account/upgrade"
             >
               Upgrade
@@ -150,8 +153,13 @@ function EnterprisePricingCard() {
 
       <div class="text-center">
         <a
+<<<<<<< HEAD
           href="mailto:hi@atl5d.com"
           class={`${BUTTON_STYLES} w-full rounded-md block`}
+=======
+          href="mailto:andy@deno.com"
+          class="button-styles w-full rounded-md block"
+>>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
         >
           Contact us
         </a>
@@ -168,13 +176,19 @@ export default defineRoute<State>(async (_req, ctx) => {
     active: true,
   });
 
+  if (data.length === 0) {
+    throw new Error(
+      "No Stripe products have been found. Please see https://github.com/denoland/saaskit#set-up-stripe-optional to set up Stripe locally and create a Stripe product.",
+    );
+  }
+
   return (
     <>
       <Head title="Pricing" href={ctx.url.href} />
       <main class="mx-auto max-w-5xl w-full flex-1 flex flex-col justify-center px-4">
         <div class="mb-8 text-center">
-          <h1 class="text-3xl font-bold">Pricing</h1>
-          <p class="text-gray-500">Choose the plan that suites you</p>
+          <h1 class="heading-styles">Pricing</h1>
+          <p class="text-gray-500">Choose the plan that suits you</p>
         </div>
         <div class="flex flex-col md:flex-row gap-4">
           <FreePlanCard />

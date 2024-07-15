@@ -1,6 +1,6 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 
-import { createHandler, Status } from "$fresh/server.ts";
+import { createHandler } from "$fresh/server.ts";
 import manifest from "@/fresh.gen.ts";
 import {
   collectValues,
@@ -20,13 +20,15 @@ import {
   assertArrayIncludes,
   assertEquals,
   assertInstanceOf,
+  assertNotEquals,
   assertObjectMatch,
   assertStringIncludes,
-} from "std/assert/mod.ts";
-import { isRedirectStatus } from "std/http/http_status.ts";
-import { resolvesNext, returnsNext, stub } from "std/testing/mock.ts";
+} from "$std/assert/mod.ts";
+import { isRedirectStatus, STATUS_CODE } from "$std/http/status.ts";
+import { resolvesNext, returnsNext, stub } from "$std/testing/mock.ts";
 import Stripe from "stripe";
 import options from "./fresh.config.ts";
+import { _internals } from "./plugins/kv_oauth.ts";
 
 /**
  * These tests are end-to-end tests, which follow this rule-set:
@@ -73,7 +75,31 @@ function assertRedirect(response: Response, location: string) {
   assert(response.headers.get("location")?.includes(location));
 }
 
+function setupEnv(overrides: Record<string, string | null> = {}) {
+  const defaults: Record<string, string> = {
+    "STRIPE_SECRET_KEY": crypto.randomUUID(),
+    "STRIPE_WEBHOOK_SECRET": crypto.randomUUID(),
+    "STRIPE_PREMIUM_PLAN_PRICE_ID": crypto.randomUUID(),
+    "GITHUB_CLIENT_ID": crypto.randomUUID(),
+    "GITHUB_CLIENT_SECRET": crypto.randomUUID(),
+    // Add more default values here
+  };
+
+  // Merge defaults and overrides
+  const combinedEnvVars = { ...defaults, ...overrides };
+
+  // Set or delete environment variables
+  for (const [key, value] of Object.entries(combinedEnvVars)) {
+    if (value === null) {
+      Deno.env.delete(key);
+    } else {
+      Deno.env.set(key, value);
+    }
+  }
+}
+
 Deno.test("[e2e] security headers", async () => {
+  setupEnv();
   const resp = await handler(new Request("http://localhost"));
 
   assertEquals(
@@ -90,39 +116,121 @@ Deno.test("[e2e] security headers", async () => {
 });
 
 Deno.test("[e2e] GET /", async () => {
+  setupEnv();
   const resp = await handler(new Request("http://localhost"));
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertHtml(resp);
 });
 
-Deno.test("[e2e] GET /callback", async () => {
-  const resp = await handler(
-    new Request("http://localhost/callback"),
-  );
+Deno.test("[e2e] GET /callback", async (test) => {
+  setupEnv();
+  const login = crypto.randomUUID();
+  const sessionId = crypto.randomUUID();
 
-  assertEquals(resp.status, Status.InternalServerError);
-  assertHtml(resp);
+  await test.step("creates a new user if it doesn't already exist", async () => {
+    const handleCallbackResp = {
+      response: new Response(),
+      tokens: {
+        accessToken: crypto.randomUUID(),
+        tokenType: crypto.randomUUID(),
+      },
+      sessionId,
+    };
+    const id = crypto.randomUUID();
+    const handleCallbackStub = stub(
+      _internals,
+      "handleCallback",
+      returnsNext([Promise.resolve(handleCallbackResp)]),
+    );
+    const githubRespBody = {
+      login,
+      email: crypto.randomUUID(),
+    };
+    const stripeRespBody: Partial<Stripe.Response<Stripe.Customer>> = { id };
+    const fetchStub = stub(
+      window,
+      "fetch",
+      returnsNext([
+        Promise.resolve(Response.json(githubRespBody)),
+        Promise.resolve(Response.json(stripeRespBody)),
+      ]),
+    );
+    const req = new Request("http://localhost/callback");
+    await handler(req);
+    handleCallbackStub.restore();
+    fetchStub.restore();
+
+    const user = await getUser(githubRespBody.login);
+    assert(user !== null);
+    assertEquals(user.sessionId, handleCallbackResp.sessionId);
+  });
+
+  await test.step("updates the user session ID if they already exist", async () => {
+    const handleCallbackResp = {
+      response: new Response(),
+      tokens: {
+        accessToken: crypto.randomUUID(),
+        tokenType: crypto.randomUUID(),
+      },
+      sessionId: crypto.randomUUID(),
+    };
+    const id = crypto.randomUUID();
+    const handleCallbackStub = stub(
+      _internals,
+      "handleCallback",
+      returnsNext([Promise.resolve(handleCallbackResp)]),
+    );
+    const githubRespBody = {
+      login,
+      email: crypto.randomUUID(),
+    };
+    const stripeRespBody: Partial<Stripe.Response<Stripe.Customer>> = { id };
+    const fetchStub = stub(
+      window,
+      "fetch",
+      returnsNext([
+        Promise.resolve(Response.json(githubRespBody)),
+        Promise.resolve(Response.json(stripeRespBody)),
+      ]),
+    );
+    const req = new Request("http://localhost/callback");
+    await handler(req);
+    handleCallbackStub.restore();
+    fetchStub.restore();
+
+    const user = await getUser(githubRespBody.login);
+    assert(user !== null);
+    assertNotEquals(user.sessionId, sessionId);
+  });
 });
 
 Deno.test("[e2e] GET /blog", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/blog"),
   );
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertHtml(resp);
 });
 
 Deno.test("[e2e] GET /pricing", async () => {
-  const req = new Request("http://localhost/pricing");
-  const resp = await handler(req);
+  setupEnv({
+    "STRIPE_SECRET_KEY": null,
+    "STRIPE_PREMIUM_PLAN_PRICE_ID": null,
+  });
+  const handler = await createHandler(manifest, options);
+  const resp = await handler(
+    new Request("http://localhost/pricing"),
+  );
 
-  assertEquals(resp.status, Status.NotFound);
+  assertEquals(resp.status, STATUS_CODE.NotFound);
   assertHtml(resp);
 });
 
 Deno.test("[e2e] GET /signin", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/signin"),
   );
@@ -134,6 +242,7 @@ Deno.test("[e2e] GET /signin", async () => {
 });
 
 Deno.test("[e2e] GET /signout", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/signout"),
   );
@@ -142,6 +251,7 @@ Deno.test("[e2e] GET /signout", async () => {
 });
 
 Deno.test("[e2e] GET /dashboard", async (test) => {
+  setupEnv();
   const url = "http://localhost/dashboard";
   const user = randomUser();
   await createUser(user);
@@ -164,6 +274,7 @@ Deno.test("[e2e] GET /dashboard", async (test) => {
 });
 
 Deno.test("[e2e] GET /dashboard/stats", async (test) => {
+  setupEnv();
   const url = "http://localhost/dashboard/stats";
   const user = randomUser();
   await createUser(user);
@@ -181,13 +292,14 @@ Deno.test("[e2e] GET /dashboard/stats", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), "<!--frsh-chart_default");
   });
 });
 
 Deno.test("[e2e] GET /dashboard/users", async (test) => {
+  setupEnv();
   const url = "http://localhost/dashboard/users";
   const user = randomUser();
   await createUser(user);
@@ -205,31 +317,34 @@ Deno.test("[e2e] GET /dashboard/users", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), "<!--frsh-userstable_default");
   });
 });
 
 Deno.test("[e2e] GET /submit", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/submit"),
   );
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertHtml(resp);
 });
 
 Deno.test("[e2e] GET /feed", async () => {
+  setupEnv();
   const resp = await handler(
     new Request("http://localhost/feed"),
   );
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertXml(resp);
 });
 
 Deno.test("[e2e] GET /api/items", async () => {
+  setupEnv();
   const item1 = randomItem();
   const item2 = randomItem();
   await createItem(item1);
@@ -238,12 +353,13 @@ Deno.test("[e2e] GET /api/items", async () => {
   const resp = await handler(req);
   const { values } = await resp.json();
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertJson(resp);
   assertArrayIncludes(values, [item1, item2]);
 });
 
 Deno.test("[e2e] POST /submit", async (test) => {
+  setupEnv();
   const url = "http://localhost/submit";
   const user = randomUser();
   await createUser(user);
@@ -311,13 +427,14 @@ Deno.test("[e2e] POST /submit", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/items/[id]", async (test) => {
+  setupEnv();
   const item = randomItem();
   const req = new Request("http://localhost/api/items/" + item.id);
 
   await test.step("serves not found response if item not found", async () => {
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertEquals(await resp.text(), "Item not found");
   });
 
@@ -325,13 +442,14 @@ Deno.test("[e2e] GET /api/items/[id]", async (test) => {
     await createItem(item);
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertJson(resp);
     assertEquals(await resp.json(), item);
   });
 });
 
 Deno.test("[e2e] GET /api/users", async () => {
+  setupEnv();
   const user1 = randomUser();
   const user2 = randomUser();
   await createUser(user1);
@@ -342,19 +460,20 @@ Deno.test("[e2e] GET /api/users", async () => {
 
   const { values } = await resp.json();
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertJson(resp);
   assertArrayIncludes(values, [user1, user2]);
 });
 
 Deno.test("[e2e] GET /api/users/[login]", async (test) => {
+  setupEnv();
   const user = randomUser();
   const req = new Request("http://localhost/api/users/" + user.login);
 
   await test.step("serves not found response if user not found", async () => {
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -363,13 +482,14 @@ Deno.test("[e2e] GET /api/users/[login]", async (test) => {
     await createUser(user);
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertJson(resp);
     assertEquals(await resp.json(), user);
   });
 });
 
 Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
+  setupEnv();
   const user = randomUser();
   const item: Item = {
     ...randomItem(),
@@ -380,7 +500,7 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
   await test.step("serves not found response if user not found", async () => {
     const resp = await handler(req);
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -391,13 +511,14 @@ Deno.test("[e2e] GET /api/users/[login]/items", async (test) => {
     const resp = await handler(req);
     const { values } = await resp.json();
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertJson(resp);
     assertArrayIncludes(values, [item]);
   });
 });
 
 Deno.test("[e2e] POST /api/vote", async (test) => {
+  setupEnv();
   const item = randomItem();
   const user = randomUser();
   await createItem(item);
@@ -407,7 +528,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
   await test.step("serves unauthorized response if the session user is not signed in", async () => {
     const resp = await handler(new Request(url, { method: "POST" }));
 
-    assertEquals(resp.status, Status.Unauthorized);
+    assertEquals(resp.status, STATUS_CODE.Unauthorized);
     assertText(resp);
     assertEquals(await resp.text(), "User must be signed in");
   });
@@ -420,7 +541,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "Item not found");
   });
@@ -435,7 +556,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.Created);
+    assertEquals(resp.status, STATUS_CODE.Created);
   });
 
   await test.step("serves an error response if the `item_id` URL parameter is missing", async () => {
@@ -446,7 +567,7 @@ Deno.test("[e2e] POST /api/vote", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertEquals(await resp.text(), "`item_id` URL parameter missing");
   });
 });
@@ -476,25 +597,29 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   const url = "http://localhost/api/stripe-webhooks";
 
   await test.step("serves not found response if Stripe is disabled", async () => {
-    Deno.env.delete("STRIPE_SECRET_KEY");
+    setupEnv(
+      { "STRIPE_SECRET_KEY": null },
+    );
     const resp = await handler(new Request(url, { method: "POST" }));
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "Not Found");
   });
 
   await test.step("serves bad request response if `Stripe-Signature` header is missing", async () => {
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    setupEnv();
     const resp = await handler(new Request(url, { method: "POST" }));
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertText(resp);
     assertEquals(await resp.text(), "`Stripe-Signature` header is missing");
   });
 
   await test.step("serves internal server error response if `STRIPE_WEBHOOK_SECRET` environment variable is not set", async () => {
-    Deno.env.delete("STRIPE_WEBHOOK_SECRET");
+    setupEnv(
+      { "STRIPE_WEBHOOK_SECRET": null },
+    );
     const resp = await handler(
       new Request(url, {
         method: "POST",
@@ -502,7 +627,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.InternalServerError);
+    assertEquals(resp.status, STATUS_CODE.InternalServerError);
     assertText(resp);
     assertEquals(
       await resp.text(),
@@ -511,7 +636,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
   });
 
   await test.step("serves bad request response if the event payload is invalid", async () => {
-    Deno.env.set("STRIPE_WEBHOOK_SECRET", crypto.randomUUID());
+    setupEnv();
     const resp = await handler(
       new Request(url, {
         method: "POST",
@@ -519,7 +644,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertText(resp);
     assertEquals(
       await resp.text(),
@@ -545,7 +670,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -574,7 +699,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.Created);
+    assertEquals(resp.status, STATUS_CODE.Created);
     assertEquals(await getUser(user.login), { ...user, isSubscribed: true });
   });
 
@@ -596,7 +721,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertText(resp);
     assertEquals(await resp.text(), "User not found");
   });
@@ -626,7 +751,7 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
     constructEventAsyncStub.restore();
 
     assertEquals(await getUser(user.login), { ...user, isSubscribed: false });
-    assertEquals(resp.status, Status.Accepted);
+    assertEquals(resp.status, STATUS_CODE.Accepted);
   });
 
   await test.step("serves bad request response if the event type is not supported", async () => {
@@ -647,13 +772,14 @@ Deno.test("[e2e] POST /api/stripe-webhooks", async (test) => {
 
     constructEventAsyncStub.restore();
 
-    assertEquals(resp.status, Status.BadRequest);
+    assertEquals(resp.status, STATUS_CODE.BadRequest);
     assertText(resp);
     assertEquals(await resp.text(), "Event type not supported");
   });
 });
 
 Deno.test("[e2e] GET /account", async (test) => {
+  setupEnv();
   const url = "http://localhost/account";
 
   await test.step("redirects to sign-in page if the session user is not signed in", async () => {
@@ -672,7 +798,7 @@ Deno.test("[e2e] GET /account", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), 'href="/account/upgrade"');
   });
@@ -687,15 +813,15 @@ Deno.test("[e2e] GET /account", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.OK);
+    assertEquals(resp.status, STATUS_CODE.OK);
     assertHtml(resp);
     assertStringIncludes(await resp.text(), 'href="/account/manage"');
   });
 });
 
 Deno.test("[e2e] GET /account/manage", async (test) => {
+  setupEnv();
   const url = "http://localhost/account/manage";
-  Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
 
   await test.step("redirects to sign-in page if the session user is not signed in", async () => {
     const resp = await handler(new Request(url));
@@ -712,7 +838,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
       }),
     );
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertHtml(resp);
   });
 
@@ -742,6 +868,7 @@ Deno.test("[e2e] GET /account/manage", async (test) => {
 });
 
 Deno.test("[e2e] GET /account/upgrade", async (test) => {
+  setupEnv();
   const url = "http://localhost/account/upgrade";
 
   await test.step("redirects to sign-in page if the session user is not signed in", async () => {
@@ -754,34 +881,37 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
   await createUser(user);
 
   await test.step("serves internal server error response if the `STRIPE_PREMIUM_PLAN_PRICE_ID` environment variable is not set", async () => {
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
-    Deno.env.delete("STRIPE_PREMIUM_PLAN_PRICE_ID");
+    setupEnv(
+      { "STRIPE_PREMIUM_PLAN_PRICE_ID": null },
+    );
+
     const resp = await handler(
       new Request(url, {
         headers: { cookie: "site-session=" + user.sessionId },
       }),
     );
 
-    assertEquals(resp.status, Status.InternalServerError);
+    assertEquals(resp.status, STATUS_CODE.InternalServerError);
     assertHtml(resp);
   });
 
   await test.step("serves not found response if Stripe is disabled", async () => {
-    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
-    Deno.env.delete("STRIPE_SECRET_KEY");
+    setupEnv(
+      { "STRIPE_SECRET_KEY": null },
+    );
+
     const resp = await handler(
       new Request(url, {
         headers: { cookie: "site-session=" + user.sessionId },
       }),
     );
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertHtml(resp);
   });
 
   await test.step("serves not found response if Stripe returns a `null` URL", async () => {
-    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", crypto.randomUUID());
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    setupEnv();
 
     const session = { url: null } as Stripe.Response<
       Stripe.Checkout.Session
@@ -800,14 +930,15 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 
     sessionsCreateStub.restore();
 
-    assertEquals(resp.status, Status.NotFound);
+    assertEquals(resp.status, STATUS_CODE.NotFound);
     assertHtml(resp);
   });
 
   await test.step("redirects to the URL returned by Stripe after creating a checkout session", async () => {
     const priceId = crypto.randomUUID();
-    Deno.env.set("STRIPE_PREMIUM_PLAN_PRICE_ID", priceId);
-    Deno.env.set("STRIPE_SECRET_KEY", crypto.randomUUID());
+    setupEnv(
+      { "STRIPE_PREMIUM_PLAN_PRICE_ID": priceId },
+    );
 
     const session = { url: "https://stubbing-returned-url" } as Stripe.Response<
       Stripe.Checkout.Session
@@ -831,6 +962,7 @@ Deno.test("[e2e] GET /account/upgrade", async (test) => {
 });
 
 Deno.test("[e2e] GET /api/me/votes", async () => {
+  setupEnv();
   const user = randomUser();
   await createUser(user);
   const item1 = randomItem();
@@ -852,14 +984,15 @@ Deno.test("[e2e] GET /api/me/votes", async () => {
   );
   const body = await resp.json();
 
-  assertEquals(resp.status, Status.OK);
+  assertEquals(resp.status, STATUS_CODE.OK);
   assertJson(resp);
   assertArrayIncludes(body, [{ ...item1, score: 1 }, { ...item2, score: 1 }]);
 });
 
 Deno.test("[e2e] GET /welcome", async () => {
-  Deno.env.delete("GITHUB_CLIENT_ID");
-
+  setupEnv(
+    { "GITHUB_CLIENT_ID": null },
+  );
   const req = new Request("http://localhost/");
   const resp = await handler(req);
 

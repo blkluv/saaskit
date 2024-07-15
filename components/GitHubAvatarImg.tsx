@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 export interface GitHubAvatarImgProps {
   /** The GitHub user's username */
   login: string;
@@ -18,7 +18,7 @@ export default function GitHubAvatarImg(props: GitHubAvatarImgProps) {
         props.size * 2
       }`}
       alt={`GitHub avatar of ${props.login}`}
-      class={`rounded-full inline-block aspect-square h-[${props.size}px] w-[${props.size}px] ${
+      class={`rounded-full inline-block aspect-square size-[${props.size}px] ${
         props.class ?? ""
       }`}
       crossOrigin="anonymous"

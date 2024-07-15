@@ -1,5 +1,5 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import { ulid } from "std/ulid/mod.ts";
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
+import { ulid } from "$std/ulid/mod.ts";
 
 const DENO_KV_PATH_KEY = "DENO_KV_PATH";
 let path = undefined;
@@ -28,9 +28,7 @@ export const kv = await Deno.openKv(path);
  * ```
  */
 export async function collectValues<T>(iter: Deno.KvListIterator<T>) {
-  const values = [];
-  for await (const { value } of iter) values.push(value);
-  return values;
+  return await Array.fromAsync(iter, ({ value }) => value);
 }
 
 // Item
@@ -61,7 +59,7 @@ export function randomItem(): Item {
  * @example
  * ```ts
  * import { createItem } from "@/utils/db.ts";
- * import { ulid } from "std/ulid/mod.ts";
+ * import { ulid } from "$std/ulid/mod.ts";
  *
  * await createItem({
  *   id: ulid(),

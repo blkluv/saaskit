@@ -1,8 +1,7 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 import type { State } from "@/plugins/session.ts";
 import { getUser } from "@/utils/db.ts";
 import IconBrandGithub from "tabler_icons_tsx/brand-github.tsx";
-import { LINK_STYLES } from "@/utils/constants.ts";
 import Head from "@/components/Head.tsx";
 import GitHubAvatarImg from "@/components/GitHubAvatarImg.tsx";
 import ItemsList from "@/islands/ItemsList.tsx";
@@ -22,11 +21,11 @@ function UserProfile(props: UserProfileProps) {
         <div class="font-semibold text-xl">
           {props.login}
         </div>
-        {props.isSubscribed && <PremiumBadge class="w-6 h-6 inline" />}
+        {props.isSubscribed && <PremiumBadge class="size-6 inline" />}
         <a
           href={`https://github.com/${props.login}`}
           aria-label={`${props.login}'s GitHub profile`}
-          class={LINK_STYLES}
+          class="link-styles"
           target="_blank"
         >
           <IconBrandGithub class="w-6" />

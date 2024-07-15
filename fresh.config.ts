@@ -1,20 +1,23 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
-import twindPlugin from "$fresh/plugins/twindv1.ts";
-import twindConfig from "./twind.config.ts";
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
+import tailwind from "$fresh/plugins/tailwind.ts";
 import kvOAuthPlugin from "./plugins/kv_oauth.ts";
 import sessionPlugin from "./plugins/session.ts";
 import errorHandling from "./plugins/error_handling.ts";
 import securityHeaders from "./plugins/security_headers.ts";
 import welcomePlugin from "./plugins/welcome.ts";
-import { FreshOptions } from "$fresh/server.ts";
+import type { FreshConfig } from "$fresh/server.ts";
+import { ga4Plugin } from "https://deno.land/x/fresh_ga4@0.0.4/mod.ts";
+import { blog } from "./plugins/blog/mod.ts";
 
 export default {
   plugins: [
+    ga4Plugin(),
     welcomePlugin,
     kvOAuthPlugin,
     sessionPlugin,
-    twindPlugin(twindConfig),
+    tailwind(),
     errorHandling,
     securityHeaders,
+    blog(),
   ],
-} as FreshOptions;
+} satisfies FreshConfig;

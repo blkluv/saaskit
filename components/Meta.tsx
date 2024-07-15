@@ -1,4 +1,4 @@
-// Copyright 2023 the Deno authors. All rights reserved. MIT license.
+// Copyright 2023-2024 the Deno authors. All rights reserved. MIT license.
 export interface MetaProps {
   /** Title of the current page */
   title: string;
@@ -26,7 +26,6 @@ export default function Meta(props: MetaProps) {
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content={props.title} />
       <meta property="og:locale" content="en" />
-      <meta property="og:type" content="website" />
       <meta property="og:title" content={props.title} />
       <meta property="og:description" content={props.description} />
       <meta property="og:url" content={props.href} />
