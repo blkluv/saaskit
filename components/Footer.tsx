@@ -13,7 +13,6 @@ function MadeWithFreshBadge() {
   );
 }
 
-<<<<<<< HEAD
 export interface FooterProps {
   // ... (previous FooterProps)
 }
@@ -30,29 +29,6 @@ export default function Footer(props: FooterProps) {
             : LINK_STYLES}
         >
           TikTok
-=======
-export default function Footer() {
-  return (
-    <footer class="site-bar-styles flex-col md:flex-row mt-8">
-      <p>© {SITE_NAME}</p>
-      <nav class="nav-styles">
-        <a
-          href="/blog"
-          class="link-styles data-[current]:!text-black data-[current]:dark:!text-white"
-        >
-          Blog
-        </a>
-        <a href="/feed" aria-label="Deno Hunt RSS Feed" class="link-styles">
-          <IconRss class="size-6" />
-        </a>
-        <a
-          href="https://discord.gg/deno"
-          target="_blank"
-          aria-label="Deno SaaSKit on Discord"
-          class="link-styles"
-        >
-          <IconBrandDiscord class="size-6" />
->>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
         </a>
         <a
           href="https://discord.gg/HkZ4pazQFb"
