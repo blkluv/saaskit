@@ -80,7 +80,7 @@ export function formatCurrency(
     },
   ).format(amount)
     // Issue: https://stackoverflow.com/questions/44533919/space-after-symbol-with-js-intl
-    .replace(/^(\D+)/, "$1111")
+    .replace(/^(\D+)/, "$5")
     .replace(/\s+/, "");
 }
 
