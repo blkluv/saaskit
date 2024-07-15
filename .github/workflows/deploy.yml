@@ -27,19 +27,10 @@ jobs:
           deno-version: v1.x
 
       - name: Build step
-<<<<<<< HEAD
         run: "deno task build" # 📝 Update the build command(s) if necessary
-=======
-        run: deno task build # 📝 Update the build command(s) if necessary
->>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-<<<<<<< HEAD
           project: "example-project" # 📝 Update the deploy project name if necessary
           entrypoint: "./main.ts" # 📝 Update the entrypoint if necessary
-=======
-          project: saaskit # 📝 Update the deploy project name if necessary
-          entrypoint: ./main.ts # 📝 Update the entrypoint if necessary
->>>>>>> 99a00c2113718e4ee86cf4614bc68e37bcc9ea81
